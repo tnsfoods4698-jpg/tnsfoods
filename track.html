@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track Order | TNS Homemade Foods</title>
+<meta name="description" content="Check the status of your TNS order with your order number.">
+<meta property="og:title" content="Track Order | TNS Homemade Foods">
+<meta property="og:description" content="Check the status of your TNS order with your order number.">
+<meta property="og:image" content="https://tnsfoods4698-jpg.github.io/tnsfoods/logo.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Kaushan+Script&family=Mukta:wght@400;500;700&family=Ramabhadra&family=Noto+Sans+Telugu:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="index.html"><img src="logo.jpg" alt="TNS" width="96" height="60"><span>TNS <small>Homemade Foods</small></span></a>
+    <nav aria-label="Main"><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="godavari.html">Godavari Taste</a><a href="track.html" aria-current="page">Track Order</a><a href="contact.html">Contact</a></nav>
+  </div>
+</header>
+<main class="wrap">
+<section class="pagehead">
+  <p class="te hero-te">మీ ఆర్డర్ ఎక్కడ ఉంది</p>
+  <h1>Track your order</h1>
+  <p class="lede">Enter the order number you got after placing your order. It looks like TNS-4F2A9C.</p>
+</section>
+<form class="trackform" id="trackForm">
+  <label for="trackId">Order number<input id="trackId" autocomplete="off" autocapitalize="characters" placeholder="TNS-"></label>
+  <button class="btn" type="submit">Check status</button>
+</form>
+<p class="err" id="trackErr" hidden></p>
+<section class="trackbox" id="trackBox" hidden>
+  <h2 id="trackTitle"></h2>
+  <ol class="progress" id="progress"></ol>
+  <p class="cancelled" id="cancelled" hidden>This order was cancelled. Please call us if this is a mistake.</p>
+  <p class="note" id="trackWhen"></p>
+  <h3>Items</h3>
+  <pre class="itemsbox" id="trackItems"></pre>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var STEPS = ["Ordered", "Preparing", "Dispatched", "Delivered"], g = function (i) { return document.getElementById(i); };
+  function show(id) {
+    g("trackErr").hidden = true; g("trackBox").hidden = true;
+    api({action: "track", id: id}).then(function (r) {
+      if (!r.ok) { g("trackErr").textContent = "We could not find order " + id + ". Check the number, or call us on 99488 04698."; g("trackErr").hidden = false; return; }
+      var at = STEPS.indexOf(r.status);
+      g("trackTitle").textContent = "Order " + r.id;
+      g("progress").hidden = at < 0; g("cancelled").hidden = r.status !== "Cancelled";
+      g("progress").innerHTML = STEPS.map(function (s, i) { return '<li class="' + (i < at ? "past" : i === at ? "now" : "") + '">' + s + "</li>"; }).join("");
+      g("trackWhen").textContent = "Placed " + new Date(r.placed).toLocaleString() + ". Last update " + new Date(r.updated).toLocaleString() + ".";
+      g("trackItems").textContent = r.items;
+      g("trackBox").hidden = false;
+    }).catch(function () { g("trackErr").textContent = "Could not reach the order system. Check your internet and try again."; g("trackErr").hidden = false; });
+  }
+  g("trackForm").addEventListener("submit", function (e) { e.preventDefault(); var v = g("trackId").value.trim().toUpperCase(); if (v) { location.hash = v; show(v); } });
+  var start = location.hash.slice(1); try { start = start || localStorage.getItem("tnsLastOrder") || ""; } catch (e) {}
+  if (start) { g("trackId").value = start; show(start); }
+});
+</script>
+</main>
+<footer class="foot">
+  <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c90-26 170 20 270 4s170-30 280-8 190 22 300 2 220-24 350 6v14H0z" fill="currentColor"/></svg>
+  <div class="foot-body"><div class="wrap foot-in">
+    <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p></div>
+    <div><p>1-32/1, Main Road, Rajaka Vari Street,<br>near SBI Bank, Velivennu,<br>Undrajavaram Mandal, A.P. 534329</p></div>
+    <div><p><a href="tel:+919948804698">99488 04698</a><br><a href="tel:+919492394098">94923 94098</a></p><p><a href="menu.html">See the menu</a></p></div>
+  </div></div>
+</footer>
+<div class="tray" id="tray" hidden><div class="wrap tray-in"><span id="trayText"></span><button id="openCart" type="button">View order</button></div></div>
+<div class="panel" id="panel" hidden>
+  <div class="sheet" role="dialog" aria-label="Your order">
+    <h2>Your order <button class="x" id="closeCart" type="button" aria-label="Close">×</button></h2>
+    <div id="orderForm" class="stack">
+      <ul class="cart" id="cart"></ul>
+      <label for="custName">Your name<input id="custName" autocomplete="name"></label>
+      <label for="custPhone">Phone number<input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 digit mobile number"></label>
+      <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
+      <div class="locrow"><button class="btn ghost" id="locBtn" type="button">Share my location</button><span id="locMsg" class="note">Helps us find your door. Optional.</span></div>
+      <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
+      <p class="err" id="orderErr" hidden></p>
+      <button class="btn wa" id="place" type="button">Place order</button>
+    </div>
+    <div id="orderDone" class="stack" hidden>
+      <p class="done-id" id="doneLine"></p>
+      <p id="doneMsg"></p>
+      <a class="btn wa" id="send" target="_blank" rel="noopener">Send it on WhatsApp</a>
+      <a class="link" id="trackLink" href="track.html">Track this order</a>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

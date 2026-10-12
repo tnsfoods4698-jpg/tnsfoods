@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TNS Staff Orders</title>
+<meta name="robots" content="noindex">
+<meta property="og:title" content="TNS Staff Orders">
+<meta property="og:description" content="Staff page.">
+<meta property="og:image" content="https://tnsfoods4698-jpg.github.io/tnsfoods/logo.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Kaushan+Script&family=Mukta:wght@400;500;700&family=Ramabhadra&family=Noto+Sans+Telugu:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="index.html"><img src="logo.jpg" alt="TNS" width="96" height="60"><span>TNS <small>Homemade Foods</small></span></a>
+    <nav aria-label="Main"><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="godavari.html">Godavari Taste</a><a href="track.html">Track Order</a><a href="contact.html">Contact</a></nav>
+  </div>
+</header>
+<main class="wrap">
+<section class="pagehead">
+  <h1>Orders</h1>
+  <p class="lede" id="staffHint">Staff only. Enter the staff key from the Settings tab of the TNS Orders sheet.</p>
+</section>
+<form class="trackform" id="keyForm">
+  <label for="staffKey">Staff key<input id="staffKey" type="password" autocomplete="off"></label>
+  <button class="btn" type="submit">Open orders</button>
+</form>
+<p class="err" id="staffErr" hidden></p>
+<div id="board" hidden>
+  <div class="boardbar"><div class="chips static" id="filters"></div><button class="btn ghost" id="refresh" type="button">Refresh</button> <button class="btn ghost" id="lock" type="button">Lock</button></div>
+  <p class="note" id="stamp"></p>
+  <div class="orders" id="orders"></div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var g = function (i) { return document.getElementById(i); }, key = "", all = [], statuses = [], filter = "Open";
+  try { key = sessionStorage.getItem("tnsStaffKey") || ""; } catch (e) {}
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+  function fail(m) { g("staffErr").textContent = m; g("staffErr").hidden = false; }
+  function draw() {
+    var open = function (o) { return o.status !== "Delivered" && o.status !== "Cancelled"; };
+    var tabs = ["Open"].concat(statuses, ["All"]);
+    g("filters").innerHTML = tabs.map(function (t) {
+      var n = all.filter(function (o) { return t === "All" || (t === "Open" ? open(o) : o.status === t); }).length;
+      return '<button type="button" class="chipbtn' + (t === filter ? " on" : "") + '" data-f="' + t + '">' + t + " (" + n + ")</button>"; }).join("");
+    var list = all.filter(function (o) { return filter === "All" || (filter === "Open" ? open(o) : o.status === filter); });
+    g("orders").innerHTML = list.map(function (o) {
+      var digits = String(o.phone).replace(/\D/g, ""), wa = digits.length === 10 ? "91" + digits : digits;
+      return '<article class="order s-' + esc(o.status) + '"><header><strong>' + esc(o.id) + '</strong><span class="pill">' + esc(o.status) + '</span></header>' +
+        '<p class="who">' + esc(o.name || "No name") + ' · <a href="tel:' + esc(digits) + '">' + esc(o.phone) + '</a> · <a href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener">WhatsApp</a></p>' +
+        (o.address ? '<p>' + esc(o.address) + '</p>' : '') +
+        (o.location ? '<p><a class="link" href="' + esc(o.location) + '" target="_blank" rel="noopener">Open location in Maps</a></p>' : '') +
+        '<pre class="itemsbox">' + esc(o.items) + '</pre><p class="note">Placed ' + new Date(o.placed).toLocaleString() + '</p>' +
+        '<div class="sbtns">' + statuses.map(function (s) { return '<button type="button" data-id="' + esc(o.id) + '" data-s="' + s + '"' + (s === o.status ? ' class="on" disabled' : '') + '>' + s + '</button>'; }).join("") + '</div></article>';
+    }).join("") || '<p class="note">No orders here yet.</p>';
+    g("stamp").textContent = "Updated " + new Date().toLocaleTimeString() + ". Refreshes every minute.";
+  }
+  function load() {
+    if (!key) return;
+    g("staffErr").hidden = true;
+    api({action: "list", key: key}).then(function (r) {
+      if (!r.ok) { key = ""; g("board").hidden = true; g("keyForm").hidden = false; fail(r.error + ". Check the key and try again."); return; }
+      try { sessionStorage.setItem("tnsStaffKey", key); } catch (e) {}
+      all = r.orders; statuses = r.statuses; g("keyForm").hidden = true; g("staffHint").hidden = true; g("board").hidden = false; draw();
+    }).catch(function () { fail("Could not reach the order system. Check your internet."); });
+  }
+  g("keyForm").addEventListener("submit", function (e) { e.preventDefault(); key = g("staffKey").value.trim(); g("staffKey").value = ""; load(); });
+  g("filters").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { filter = b.dataset.f; draw(); } });
+  g("orders").addEventListener("click", function (e) {
+    var b = e.target.closest(".sbtns button"); if (!b) return;
+    b.textContent = "Saving";
+    api({action: "status", key: key, id: b.dataset.id, status: b.dataset.s}).then(function (r) { if (!r.ok) fail(r.error); load(); }).catch(function () { fail("Could not save. Try again."); load(); });
+  });
+  g("refresh").onclick = load;
+  g("lock").onclick = function () { key = ""; try { sessionStorage.removeItem("tnsStaffKey"); } catch (e) {} g("board").hidden = true; g("keyForm").hidden = false; g("staffHint").hidden = false; };
+  setInterval(function () { if (!g("board").hidden) load(); }, 60000);
+  load();
+});
+</script>
+</main>
+<footer class="foot">
+  <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c90-26 170 20 270 4s170-30 280-8 190 22 300 2 220-24 350 6v14H0z" fill="currentColor"/></svg>
+  <div class="foot-body"><div class="wrap foot-in">
+    <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p></div>
+    <div><p>1-32/1, Main Road, Rajaka Vari Street,<br>near SBI Bank, Velivennu,<br>Undrajavaram Mandal, A.P. 534329</p></div>
+    <div><p><a href="tel:+919948804698">99488 04698</a><br><a href="tel:+919492394098">94923 94098</a></p><p><a href="menu.html">See the menu</a></p></div>
+  </div></div>
+</footer>
+<div class="tray" id="tray" hidden><div class="wrap tray-in"><span id="trayText"></span><button id="openCart" type="button">View order</button></div></div>
+<div class="panel" id="panel" hidden>
+  <div class="sheet" role="dialog" aria-label="Your order">
+    <h2>Your order <button class="x" id="closeCart" type="button" aria-label="Close">×</button></h2>
+    <div id="orderForm" class="stack">
+      <ul class="cart" id="cart"></ul>
+      <label for="custName">Your name<input id="custName" autocomplete="name"></label>
+      <label for="custPhone">Phone number<input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 digit mobile number"></label>
+      <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
+      <div class="locrow"><button class="btn ghost" id="locBtn" type="button">Share my location</button><span id="locMsg" class="note">Helps us find your door. Optional.</span></div>
+      <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
+      <p class="err" id="orderErr" hidden></p>
+      <button class="btn wa" id="place" type="button">Place order</button>
+    </div>
+    <div id="orderDone" class="stack" hidden>
+      <p class="done-id" id="doneLine"></p>
+      <p id="doneMsg"></p>
+      <a class="btn wa" id="send" target="_blank" rel="noopener">Send it on WhatsApp</a>
+      <a class="link" id="trackLink" href="track.html">Track this order</a>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

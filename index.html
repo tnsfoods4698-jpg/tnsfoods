@@ -18,7 +18,7 @@
 <header class="top">
   <div class="wrap top-in">
     <a class="brand" href="index.html"><img src="logo.jpg" alt="TNS" width="96" height="60"><span>TNS <small>Homemade Foods</small></span></a>
-    <nav aria-label="Main"><a href="index.html" aria-current="page">Home</a><a href="menu.html">Menu</a><a href="godavari.html">Godavari Taste</a><a href="contact.html">Contact</a></nav>
+    <nav aria-label="Main"><a href="index.html" aria-current="page">Home</a><a href="menu.html">Menu</a><a href="godavari.html">Godavari Taste</a><a href="track.html">Track Order</a><a href="contact.html">Contact</a></nav>
   </div>
 </header>
 <main>
@@ -72,11 +72,22 @@
 <div class="panel" id="panel" hidden>
   <div class="sheet" role="dialog" aria-label="Your order">
     <h2>Your order <button class="x" id="closeCart" type="button" aria-label="Close">×</button></h2>
-    <ul class="cart" id="cart"></ul>
-    <label for="custName">Your name<input id="custName" autocomplete="name"></label>
-    <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
-    <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
-    <a class="btn wa" id="send" target="_blank" rel="noopener">Send order on WhatsApp</a>
+    <div id="orderForm" class="stack">
+      <ul class="cart" id="cart"></ul>
+      <label for="custName">Your name<input id="custName" autocomplete="name"></label>
+      <label for="custPhone">Phone number<input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 digit mobile number"></label>
+      <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
+      <div class="locrow"><button class="btn ghost" id="locBtn" type="button">Share my location</button><span id="locMsg" class="note">Helps us find your door. Optional.</span></div>
+      <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
+      <p class="err" id="orderErr" hidden></p>
+      <button class="btn wa" id="place" type="button">Place order</button>
+    </div>
+    <div id="orderDone" class="stack" hidden>
+      <p class="done-id" id="doneLine"></p>
+      <p id="doneMsg"></p>
+      <a class="btn wa" id="send" target="_blank" rel="noopener">Send it on WhatsApp</a>
+      <a class="link" id="trackLink" href="track.html">Track this order</a>
+    </div>
   </div>
 </div>
 <script src="app.js"></script>
