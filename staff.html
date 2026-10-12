@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<p class="who">' + esc(o.name || "No name") + ' · <a href="tel:' + esc(digits) + '">' + esc(o.phone) + '</a> · <a href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener">WhatsApp</a></p>' +
         (o.address ? '<p>' + esc(o.address) + '</p>' : '') +
         (o.location ? '<p><a class="link" href="' + esc(o.location) + '" target="_blank" rel="noopener">Open location in Maps</a></p>' : '') +
-        '<pre class="itemsbox">' + esc(o.items) + '</pre><p class="note">Placed ' + new Date(o.placed).toLocaleString() + '</p>' +
+        '<pre class="itemsbox">' + esc(o.items) + '</pre>' + (o.total ? '<p><strong>Total: ' + esc(o.total) + '</strong></p>' : '') + '<p class="note">Placed ' + new Date(o.placed).toLocaleString() + '</p>' +
         '<div class="sbtns">' + statuses.map(function (s) { return '<button type="button" data-id="' + esc(o.id) + '" data-s="' + s + '"' + (s === o.status ? ' class="on" disabled' : '') + '>' + s + '</button>'; }).join("") + '</div></article>';
     }).join("") || '<p class="note">No orders here yet.</p>';
     g("stamp").textContent = "Updated " + new Date().toLocaleTimeString() + ". Refreshes every minute.";
@@ -87,8 +87,8 @@ document.addEventListener("DOMContentLoaded", function () {
   <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c90-26 170 20 270 4s170-30 280-8 190 22 300 2 220-24 350 6v14H0z" fill="currentColor"/></svg>
   <div class="foot-body"><div class="wrap foot-in">
     <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p></div>
-    <div><p>1-32/1, Main Road, Rajaka Vari Street,<br>near SBI Bank, Velivennu,<br>Undrajavaram Mandal, A.P. 534329</p></div>
-    <div><p><a href="tel:+919948804698">99488 04698</a><br><a href="tel:+919492394098">94923 94098</a></p><p><a href="menu.html">See the menu</a></p></div>
+    <div><p data-set="address">1-32/1, Main Road, Rajaka Vari Street, near SBI Bank, Velivennu, Undrajavaram Mandal, Andhra Pradesh 534329</p></div>
+    <div><p><a data-tel="phone1" href="tel:+919948804698">99488 04698</a><br><a data-tel="phone2" href="tel:+919492394098">94923 94098</a><br><a data-mail href="mailto:tnsfoods4698@gmail.com">tnsfoods4698@gmail.com</a></p><p><a href="menu.html">See the menu</a><br><a data-ig href="https://www.instagram.com/tns_homefoods" target="_blank" rel="noopener">Instagram</a></p></div>
   </div></div>
 </footer>
 <div class="tray" id="tray" hidden><div class="wrap tray-in"><span id="trayText"></span><button id="openCart" type="button">View order</button></div></div>

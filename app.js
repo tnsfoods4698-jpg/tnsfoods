@@ -1,43 +1,92 @@
 const API = "https://script.google.com/macros/s/AKfycbzMrwkq-UDHKfu8lB9Kk6ZOuX6lSo8ESb8A_uITJK9AtAWeAvt1nDvP3uG4cSpzjUjY/exec";
 function api(d) { return fetch(API, {method: "POST", body: JSON.stringify(d)}).then(r => r.json()); }
-const WA = "919948804698", SIZES = ["250 g", "500 g", "1 kg"];
-const MENU = [
-  {id: "pickles", title: "Pickles", te: "పచ్చళ్ళు", items: [
-    ["Mango Pickle", "మామిడి ఆవకాయ"], ["Lemon Pickle", "నిమ్మకాయ పచ్చడి"], ["Gongura Pickle", "గోంగూర పచ్చడి"], ["Tomato Pickle", "టమాటా పచ్చడి"],
-    ["Chicken Pickle", "చికెన్ పచ్చడి", 1], ["Mutton Pickle", "మటన్ పచ్చడి", 1], ["Fish Pickle", "చేపల పచ్చడి", 1], ["Prawn Pickle", "రొయ్యల పచ్చడి", 1]]},
-  {id: "dryfruits", title: "Dry Fruits & Nuts", te: "డ్రై ఫ్రూట్స్", items: [
-    ["Almonds", "బాదం"], ["Cashews", "జీడిపప్పు"], ["Pistachios", "పిస్తా"], ["Raisins", "కిస్మిస్"], ["Dates", "ఖర్జూరం"], ["Mixed Dry Fruits", "మిక్స్‌డ్ డ్రై ఫ్రూట్స్"]]},
-  {id: "sweets", title: "Sweets", te: "మిఠాయిలు", items: [
-    ["Besan Laddu", "శనగపిండి లడ్డు"], ["Rava Laddu", "రవ్వ లడ్డు"], ["Coconut Laddu", "కొబ్బరి లడ్డు"], ["Boondi Laddu", "బూందీ లడ్డు"], ["Mysore Pak", "మైసూర్ పాక్"], ["Kaju Sweets", "కాజు స్వీట్స్"]]},
-  {id: "snacks", title: "Hot Snacks", te: "కారపు పిండివంటలు", items: [
-    ["Murukku", "మురుకులు"], ["Chakli", "జంతికలు"], ["Mixture", "మిక్చర్"], ["Chekkalu", "చెక్కలు"], ["Ribbon Pakoda", "రిబ్బన్ పకోడీ"], ["Kara Boondi", "కారా బూందీ"], ["Masala Peanuts", "మసాలా పల్లీలు"], ["Spicy Cashews", "కారం జీడిపప్పు"]]}
-];
+let WA = "919948804698";
+// Picture and Telugu heading for the categories we know. New categories from the sheet still show, with the logo.
+const CAT_INFO = {"Pickles": ["pickles", "పచ్చళ్ళు"], "Dry Fruits & Nuts": ["dryfruits", "డ్రై ఫ్రూట్స్"], "Sweets": ["sweets", "మిఠాయిలు"], "Hot Snacks": ["snacks", "కారపు పిండివంటలు"]};
+// Built-in menu, used until the live menu arrives from the Google Sheet.
+const BUILT_IN = {
+  "Pickles": [["Mango Pickle", "మామిడి ఆవకాయ"], ["Lemon Pickle", "నిమ్మకాయ పచ్చడి"], ["Gongura Pickle", "గోంగూర పచ్చడి"], ["Tomato Pickle", "టమాటా పచ్చడి"], ["Chicken Pickle", "చికెన్ పచ్చడి", 1], ["Mutton Pickle", "మటన్ పచ్చడి", 1], ["Fish Pickle", "చేపల పచ్చడి", 1], ["Prawn Pickle", "రొయ్యల పచ్చడి", 1]],
+  "Dry Fruits & Nuts": [["Almonds", "బాదం"], ["Cashews", "జీడిపప్పు"], ["Pistachios", "పిస్తా"], ["Raisins", "కిస్మిస్"], ["Dates", "ఖర్జూరం"], ["Mixed Dry Fruits", "మిక్స్‌డ్ డ్రై ఫ్రూట్స్"]],
+  "Sweets": [["Besan Laddu", "శనగపిండి లడ్డు"], ["Rava Laddu", "రవ్వ లడ్డు"], ["Coconut Laddu", "కొబ్బరి లడ్డు"], ["Boondi Laddu", "బూందీ లడ్డు"], ["Mysore Pak", "మైసూర్ పాక్"], ["Kaju Sweets", "కాజు స్వీట్స్"]],
+  "Hot Snacks": [["Murukku", "మురుకులు"], ["Chakli", "జంతికలు"], ["Mixture", "మిక్చర్"], ["Chekkalu", "చెక్కలు"], ["Ribbon Pakoda", "రిబ్బన్ పకోడీ"], ["Kara Boondi", "కారా బూందీ"], ["Masala Peanuts", "మసాలా పల్లీలు"], ["Spicy Cashews", "కారం జీడిపప్పు"]]
+};
+let DATA = {sizes: ["250 g", "500 g", "1 kg"], items: []};
+Object.keys(BUILT_IN).forEach(c => BUILT_IN[c].forEach(([name, te, nv]) => DATA.items.push({cat: c, name, te, nv: !!nv, prices: {}})));
+
 const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const rs = n => "₹" + Number(n).toLocaleString("en-IN");
 let cart = {};
 try { cart = JSON.parse(localStorage.getItem("tnsCart")) || {}; } catch (e) {}
+try { const c = JSON.parse(localStorage.getItem("tnsMenu")); if (c && c.items && c.items.length) DATA = c; } catch (e) {}
 
+function sizesFor(it) { const p = DATA.sizes.filter(s => it.prices[s]); return p.length ? p : DATA.sizes; }
+function priceOf(name, size) { const it = DATA.items.find(i => i.name === name); return it && it.prices[size] ? it.prices[size] : 0; }
+function catId(c) { return CAT_INFO[c] ? CAT_INFO[c][0] : c.toLowerCase().replace(/[^a-z0-9]+/g, "-"); }
+
+function renderMenu() {
+  if (!$("menu")) return;
+  const cats = [];
+  DATA.items.forEach(i => { if (cats.indexOf(i.cat) < 0) cats.push(i.cat); });
+  $("chips").innerHTML = cats.map(c => `<a href="#${catId(c)}">${esc(c)}</a>`).join("");
+  $("menu").innerHTML = cats.map(c => {
+    const info = CAT_INFO[c];
+    return `<section class="msec" id="${catId(c)}">
+    <div class="msec-head"><img src="${info ? "c_" + info[0] + ".jpg" : "logo.jpg"}" alt=""><h2>${info ? `<span class="te">${info[1]}</span>` : ""}${esc(c)}</h2></div>
+    <ul class="items">${DATA.items.map((it, i) => it.cat !== c ? "" : `<li><span class="dot${it.nv ? " nv" : ""}" title="${it.nv ? "Non-veg" : "Veg"}"></span>
+      <span class="name">${esc(it.name)}<span class="te">${esc(it.te)}</span></span>
+      <select id="sz-${i}" aria-label="Pack size for ${esc(it.name)}">${sizesFor(it).map((s, k, a) => `<option value="${esc(s)}"${k === Math.min(1, a.length - 1) ? " selected" : ""}>${esc(s)}${it.prices[s] ? " · " + rs(it.prices[s]) : ""}</option>`).join("")}</select>
+      <button class="add" type="button" data-i="${i}">Add</button></li>`).join("")}</ul></section>`;
+  }).join("");
+}
 if ($("menu")) {
-  $("chips").innerHTML = MENU.map(c => `<a href="#${c.id}">${c.title}</a>`).join("");
-  $("menu").innerHTML = MENU.map(c => `<section class="msec" id="${c.id}">
-    <div class="msec-head"><img src="c_${c.id}.jpg" alt=""><h2><span class="te">${c.te}</span>${c.title}</h2></div>
-    <ul class="items">${c.items.map(([n, te, nv], i) => `<li><span class="dot${nv ? " nv" : ""}" title="${nv ? "Non-veg" : "Veg"}"></span>
-      <span class="name">${n}<span class="te">${te}</span></span>
-      <select id="sz-${c.id}-${i}" aria-label="Pack size for ${n}">${SIZES.map((s, k) => `<option${k == 1 ? " selected" : ""}>${s}</option>`).join("")}</select>
-      <button class="add" type="button" data-n="${n}" data-s="sz-${c.id}-${i}">Add</button></li>`).join("")}</ul></section>`).join("");
   $("menu").addEventListener("click", e => {
     const b = e.target.closest(".add"); if (!b) return;
-    const k = b.dataset.n + "|" + $(b.dataset.s).value;
+    const k = DATA.items[b.dataset.i].name + "|" + $("sz-" + b.dataset.i).value;
     cart[k] = (cart[k] || 0) + 1; render();
     b.textContent = "Added"; setTimeout(() => b.textContent = "Add", 900);
   });
+  renderMenu();
   if (location.hash && $(location.hash.slice(1))) $(location.hash.slice(1)).scrollIntoView();
 }
+api({action: "menu"}).then(r => {
+  if (!r.ok || !r.items || !r.items.length) return;
+  DATA = {sizes: r.sizes, items: r.items, settings: r.settings || null};
+  try { localStorage.setItem("tnsMenu", JSON.stringify(DATA)); } catch (e) {}
+  renderMenu(); applySettings(); render();
+}).catch(() => {});
+
+// Contact details come from the Settings tab of the sheet; the page keeps its built-in ones if a field is empty.
+function applySettings() {
+  const s = DATA.settings; if (!s) return;
+  const digits = v => String(v || "").replace(/\D/g, ""), each = (q, f) => document.querySelectorAll(q).forEach(f);
+  const intl = v => { const d = digits(v); return d.length === 10 ? "91" + d : d; };
+  const pretty = v => { const d = digits(v).slice(-10); return d.length === 10 ? d.slice(0, 5) + " " + d.slice(5) : String(v); };
+  ["phone1", "phone2"].forEach(k => each('[data-tel="' + k + '"]', el => {
+    if (digits(s[k]).length >= 10) { el.href = "tel:+" + intl(s[k]); el.textContent = pretty(s[k]); el.hidden = false; } else el.hidden = true; }));
+  if (digits(s.whatsapp).length >= 10) { WA = intl(s.whatsapp); each("[data-wa]", el => el.href = "https://wa.me/" + WA); }
+  each("[data-mail]", el => { if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s.email || "")) { el.href = "mailto:" + s.email; el.textContent = s.email; el.hidden = false; } else el.hidden = true; });
+  if (s.address) each('[data-set="address"]', el => el.textContent = s.address);
+  if (/^https:\/\/(www\.)?instagram\.com\//.test(s.instagram || "")) each("[data-ig]", el => {
+    el.href = s.instagram; if (el.hasAttribute("data-ig-name")) el.textContent = "@" + s.instagram.split("instagram.com/")[1].split(/[/?#]/)[0]; });
+  if (/^https:\/\//.test(s.maps || "")) each("[data-map]", el => el.href = s.maps);
+}
+applySettings();
 
 let loc = "";
-function itemsText() { return Object.entries(cart).map(([k, q]) => `- ${k.replace("|", " (")}) x ${q}`).join("\n"); }
+function lines() {
+  return Object.entries(cart).map(([k, q]) => { const [name, size] = k.split("|"), p = priceOf(name, size); return {k, name, size, q, p, amt: p * q}; });
+}
+function totalText() {
+  const l = lines(), sum = l.reduce((a, x) => a + x.amt, 0), unpriced = l.some(x => !x.p);
+  if (!sum) return "";
+  return rs(sum) + (unpriced ? " plus items we will price on WhatsApp" : "");
+}
+function itemsText() { return lines().map(x => `- ${x.name} (${x.size}) x ${x.q}${x.p ? " = " + rs(x.amt) : ""}`).join("\n"); }
 function waLink(id) {
   let t = "Hello TNS, I would like to order:\n" + itemsText();
-  const n = $("custName").value.trim(), ph = $("custPhone").value.trim(), a = $("custAddr").value.trim();
+  const n = $("custName").value.trim(), ph = $("custPhone").value.trim(), a = $("custAddr").value.trim(), tot = totalText();
+  if (tot) t += "\nTotal: " + tot;
   if (id) t += "\n\nOrder number: " + id;
   if (n) t += "\nName: " + n;
   if (ph) t += "\nPhone: " + ph;
@@ -47,11 +96,11 @@ function waLink(id) {
 }
 function render() {
   try { localStorage.setItem("tnsCart", JSON.stringify(cart)); } catch (e) {}
-  const keys = Object.keys(cart), n = keys.reduce((a, k) => a + cart[k], 0);
+  const l = lines(), n = l.reduce((a, x) => a + x.q, 0), tot = totalText();
   $("tray").hidden = !n;
-  $("trayText").textContent = n + (n == 1 ? " pack" : " packs") + " in your order";
-  $("cart").innerHTML = keys.map(k => { const [a, s] = k.split("|");
-    return `<li><span class="name">${a}<small>${s}</small></span><span class="qty"><button type="button" data-k="${k}" data-d="-1" aria-label="Less">−</button>${cart[k]}<button type="button" data-k="${k}" data-d="1" aria-label="More">+</button></span></li>`; }).join("");
+  $("trayText").textContent = n + (n == 1 ? " pack" : " packs") + " in your order" + (tot ? " · " + tot : "");
+  $("cart").innerHTML = l.map(x => `<li><span class="name">${esc(x.name)}<small>${esc(x.size)}${x.p ? " · " + rs(x.p) + " each" : ""}</small></span><span class="qty"><button type="button" data-k="${esc(x.k)}" data-d="-1" aria-label="Less">−</button>${x.q}<button type="button" data-k="${esc(x.k)}" data-d="1" aria-label="More">+</button></span>${x.p ? `<span class="amt">${rs(x.amt)}</span>` : ""}</li>`).join("")
+    + (tot ? `<li class="total"><span class="name">Total</span><span class="amt">${esc(tot)}</span></li>` : "");
   if (!n && $("orderDone").hidden) $("panel").hidden = true;
 }
 $("cart").addEventListener("click", e => {
@@ -85,7 +134,7 @@ $("place").onclick = () => {
     cart = {}; render();
     $("place").disabled = false; $("place").textContent = "Place order";
   };
-  api({action: "order", name: $("custName").value, phone: $("custPhone").value, address: $("custAddr").value, location: loc, items: itemsText()})
+  api({action: "order", name: $("custName").value, phone: $("custPhone").value, address: $("custAddr").value, location: loc, items: itemsText(), total: totalText()})
     .then(r => done(r.ok ? r.id : "")).catch(() => done(""));
 };
 $("openCart").onclick = () => { $("orderForm").hidden = false; $("orderDone").hidden = true; $("panel").hidden = false; };
