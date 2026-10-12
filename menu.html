@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu | TNS Homemade Foods</title>
+<meta name="description" content="Full TNS menu: Godavari pickles, dry fruits and nuts, sweets and hot snacks. Pick items and order on WhatsApp.">
+<meta property="og:title" content="Menu | TNS Homemade Foods">
+<meta property="og:description" content="Full TNS menu: Godavari pickles, dry fruits and nuts, sweets and hot snacks. Pick items and order on WhatsApp.">
+<meta property="og:image" content="https://tnsfoods4698-jpg.github.io/tnsfoods/logo.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Kaushan+Script&family=Mukta:wght@400;500;700&family=Ramabhadra&family=Noto+Sans+Telugu:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="index.html"><img src="logo.jpg" alt="TNS" width="96" height="60"><span>TNS <small>Homemade Foods</small></span></a>
+    <nav aria-label="Main"><a href="index.html">Home</a><a href="menu.html" aria-current="page">Menu</a><a href="godavari.html">Godavari Taste</a><a href="contact.html">Contact</a></nav>
+  </div>
+</header>
+<main class="wrap">
+<section class="pagehead">
+  <p class="te hero-te">మెనూ</p>
+  <h1>Our menu</h1>
+  <p class="lede">Choose a pack size, tap Add, then send your order on WhatsApp. We confirm the price before packing. <span class="key"><span class="dot"></span> veg <span class="dot nv"></span> non-veg</span></p>
+</section>
+<nav class="chips" id="chips" aria-label="Menu sections"></nav>
+<div id="menu"><noscript>Please call 99488 04698 to order.</noscript></div>
+</main>
+<footer class="foot">
+  <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c90-26 170 20 270 4s170-30 280-8 190 22 300 2 220-24 350 6v14H0z" fill="currentColor"/></svg>
+  <div class="foot-body"><div class="wrap foot-in">
+    <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p></div>
+    <div><p>1-32/1, Main Road, Rajaka Vari Street,<br>near SBI Bank, Velivennu,<br>Undrajavaram Mandal, A.P. 534329</p></div>
+    <div><p><a href="tel:+919948804698">99488 04698</a><br><a href="tel:+919492394098">94923 94098</a></p><p><a href="menu.html">See the menu</a></p></div>
+  </div></div>
+</footer>
+<div class="tray" id="tray" hidden><div class="wrap tray-in"><span id="trayText"></span><button id="openCart" type="button">View order</button></div></div>
+<div class="panel" id="panel" hidden>
+  <div class="sheet" role="dialog" aria-label="Your order">
+    <h2>Your order <button class="x" id="closeCart" type="button" aria-label="Close">×</button></h2>
+    <ul class="cart" id="cart"></ul>
+    <label for="custName">Your name<input id="custName" autocomplete="name"></label>
+    <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
+    <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
+    <a class="btn wa" id="send" target="_blank" rel="noopener">Send order on WhatsApp</a>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
