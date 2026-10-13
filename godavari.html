@@ -49,7 +49,7 @@
 <footer class="foot">
   <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c90-26 170 20 270 4s170-30 280-8 190 22 300 2 220-24 350 6v14H0z" fill="currentColor"/></svg>
   <div class="foot-body"><div class="wrap foot-in">
-    <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p></div>
+    <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p><p class="fssai" data-fssai hidden>FSSAI Lic. No. <span></span></p></div>
     <div><p data-set="address">1-32/1, Main Road, Rajaka Vari Street, near SBI Bank, Velivennu, Undrajavaram Mandal, Andhra Pradesh 534329</p></div>
     <div><p><a data-tel="phone1" href="tel:+919948804698">99488 04698</a><br><a data-tel="phone2" href="tel:+919492394098">94923 94098</a><br><a data-mail href="mailto:tnsfoods4698@gmail.com">tnsfoods4698@gmail.com</a></p><p><a href="menu.html">See the menu</a><br><a data-ig href="https://www.instagram.com/tns_homefoods" target="_blank" rel="noopener">Instagram</a></p></div>
   </div></div>
@@ -73,9 +73,17 @@
       <p id="doneMsg"></p>
       <a class="btn wa" id="send" target="_blank" rel="noopener">Send it on WhatsApp</a>
       <a class="link" id="trackLink" href="track.html">Track this order</a>
+      <div class="paybox" id="payBox" hidden>
+        <p class="paytitle">Pay by UPI <strong id="payAmt"></strong></p>
+        <div class="qr" id="payQr"></div>
+        <p>UPI ID: <strong id="payId" class="sel"></strong></p>
+        <a class="btn" id="payLink">Open my UPI app</a>
+        <p class="note" id="payNote"></p>
+      </div>
     </div>
   </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

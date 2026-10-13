@@ -70,8 +70,30 @@ function applySettings() {
   if (/^https:\/\/(www\.)?instagram\.com\//.test(s.instagram || "")) each("[data-ig]", el => {
     el.href = s.instagram; if (el.hasAttribute("data-ig-name")) el.textContent = "@" + s.instagram.split("instagram.com/")[1].split(/[/?#]/)[0]; });
   if (/^https:\/\//.test(s.maps || "")) each("[data-map]", el => el.href = s.maps);
+  each("[data-fssai]", el => { el.hidden = !s.fssai; if (s.fssai) el.querySelector("span").textContent = s.fssai; });
+  each("[data-upi]", el => { el.hidden = !upiId(); if (upiId()) el.querySelector("strong").textContent = upiId(); });
+  each("[data-siteqr]", el => { el.innerHTML = qrSvg(/^https:\/\//.test(s.qr || "") ? s.qr : SITE); });
 }
+const SITE = "https://tnsfoods4698-jpg.github.io/tnsfoods/";
+function upiId() { const u = (DATA.settings && DATA.settings.upi || "").trim(); return /^[\w.\-]{2,}@[a-zA-Z0-9]{2,}$/.test(u) ? u : ""; }
+function qrSvg(text) {
+  if (typeof qrcode === "undefined") return "";
+  const q = qrcode(0, "M"); q.addData(text); q.make();
+  return q.createSvgTag({cellSize: 5, margin: 4, scalable: true});
+}
+document.querySelectorAll("[data-siteqr]").forEach(el => { if (!el.innerHTML) el.innerHTML = qrSvg(SITE); });
 applySettings();
+function showPay(id, sum, unpriced) {
+  const u = upiId(); $("payBox").hidden = !u; if (!u) return;
+  const amt = sum && !unpriced ? sum : 0;
+  const link = "upi://pay?pa=" + encodeURIComponent(u) + "&pn=" + encodeURIComponent("TNS Homemade Foods") + (amt ? "&am=" + amt.toFixed(2) : "") + "&cu=INR" + (id ? "&tn=" + encodeURIComponent(id) : "");
+  $("payAmt").textContent = amt ? rs(amt) : "";
+  $("payQr").innerHTML = qrSvg(link);
+  $("payId").textContent = u;
+  $("payLink").href = link;
+  $("payNote").textContent = amt ? "Scan with any UPI app, or tap the button on your phone. Add delivery charges only if we tell you on WhatsApp."
+    : "Some items are priced on WhatsApp. Please pay after we send you the final amount.";
+}
 
 let loc = "";
 function lines() {
@@ -124,6 +146,8 @@ $("place").onclick = () => {
   if (ph.length < 10) { err.textContent = "Please enter your 10 digit phone number so we can confirm the order."; err.hidden = false; $("custPhone").focus(); return; }
   $("place").disabled = true; $("place").textContent = "Placing your order...";
   const done = id => {
+    const l = lines();
+    showPay(id, l.reduce((a, x) => a + x.amt, 0), l.some(x => !x.p));
     $("send").href = waLink(id);
     $("doneLine").textContent = id ? "Order number " + id : "Almost done";
     $("doneMsg").textContent = id ? "We have your order. Send it on WhatsApp too and we will confirm the price and delivery. Keep the order number to track it."
