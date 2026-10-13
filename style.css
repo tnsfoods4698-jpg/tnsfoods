@@ -160,6 +160,10 @@ label{display:grid;gap:4px;font-weight:500}
 .sel{user-select:all}
 .paybtn{font:inherit;font-size:.9rem;margin-left:8px;padding:3px 10px;border:1px solid var(--line);background:var(--bg);border-radius:4px;cursor:pointer;color:var(--ink)}
 .pay-Paid{color:var(--leaf)}.pay-Unpaid{color:var(--chilli)}
+.payopt{border:1px solid var(--line);border-radius:4px;padding:8px 12px;margin:0;display:flex;gap:6px 22px;flex-wrap:wrap}
+.payopt legend{font-weight:500;padding:0 4px}
+.payopt label{display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer}
+.payopt input{width:18px;height:18px;padding:0}
 [hidden]{display:none!important}
 
 @media (max-width:760px){

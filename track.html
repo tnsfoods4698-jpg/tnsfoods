@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
       g("progress").hidden = at < 0; g("cancelled").hidden = r.status !== "Cancelled";
       g("progress").innerHTML = STEPS.map(function (s, i) { return '<li class="' + (i < at ? "past" : i === at ? "now" : "") + '">' + s + "</li>"; }).join("");
       g("trackWhen").textContent = "Placed " + new Date(r.placed).toLocaleString() + ". Last update " + new Date(r.updated).toLocaleString() + ".";
-      g("trackItems").textContent = r.items + (r.total ? "\nTotal: " + r.total : "") + (r.payment ? "\nPayment: " + r.payment : "");
+      g("trackItems").textContent = r.items + (r.total ? "\nTotal: " + r.total : "") + (r.method ? "\nPay by: " + r.method : "") + (r.payment ? "\nPayment: " + r.payment : "");
       g("trackBox").hidden = false;
     }).catch(function () { g("trackErr").textContent = "Could not reach the order system. Check your internet and try again."; g("trackErr").hidden = false; });
   }
@@ -80,6 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
       <label for="custPhone">Phone number<input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 digit mobile number"></label>
       <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
       <div class="locrow"><button class="btn ghost" id="locBtn" type="button">Share my location</button><span id="locMsg" class="note">Helps us find your door. Optional.</span></div>
+      <fieldset class="payopt"><legend>How will you pay?</legend>
+        <label for="payUpi"><input type="radio" name="payMethod" id="payUpi" value="UPI" checked> UPI</label>
+        <label for="payCod"><input type="radio" name="payMethod" id="payCod" value="Cash on delivery"> Cash on delivery</label>
+      </fieldset>
       <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
       <p class="err" id="orderErr" hidden></p>
       <button class="btn wa" id="place" type="button">Place order</button>

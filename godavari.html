@@ -64,6 +64,10 @@
       <label for="custPhone">Phone number<input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 digit mobile number"></label>
       <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
       <div class="locrow"><button class="btn ghost" id="locBtn" type="button">Share my location</button><span id="locMsg" class="note">Helps us find your door. Optional.</span></div>
+      <fieldset class="payopt"><legend>How will you pay?</legend>
+        <label for="payUpi"><input type="radio" name="payMethod" id="payUpi" value="UPI" checked> UPI</label>
+        <label for="payCod"><input type="radio" name="payMethod" id="payCod" value="Cash on delivery"> Cash on delivery</label>
+      </fieldset>
       <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
       <p class="err" id="orderErr" hidden></p>
       <button class="btn wa" id="place" type="button">Place order</button>

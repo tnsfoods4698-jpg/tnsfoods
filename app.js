@@ -83,8 +83,9 @@ function qrSvg(text) {
 }
 document.querySelectorAll("[data-siteqr]").forEach(el => { if (!el.innerHTML) el.innerHTML = qrSvg(SITE); });
 applySettings();
+function payMethod() { return $("payCod").checked ? "Cash on delivery" : "UPI"; }
 function showPay(id, sum, unpriced) {
-  const u = upiId(); $("payBox").hidden = !u; if (!u) return;
+  const u = payMethod() === "UPI" ? upiId() : ""; $("payBox").hidden = !u; if (!u) return;
   const amt = sum && !unpriced ? sum : 0;
   const link = "upi://pay?pa=" + encodeURIComponent(u) + "&pn=" + encodeURIComponent("TNS Homemade Foods") + (amt ? "&am=" + amt.toFixed(2) : "") + "&cu=INR" + (id ? "&tn=" + encodeURIComponent(id) : "");
   $("payAmt").textContent = amt ? rs(amt) : "";
@@ -109,6 +110,7 @@ function waLink(id) {
   let t = "Hello TNS, I would like to order:\n" + itemsText();
   const n = $("custName").value.trim(), ph = $("custPhone").value.trim(), a = $("custAddr").value.trim(), tot = totalText();
   if (tot) t += "\nTotal: " + tot;
+  t += "\nPayment: " + payMethod();
   if (id) t += "\n\nOrder number: " + id;
   if (n) t += "\nName: " + n;
   if (ph) t += "\nPhone: " + ph;
@@ -152,13 +154,14 @@ $("place").onclick = () => {
     $("doneLine").textContent = id ? "Order number " + id : "Almost done";
     $("doneMsg").textContent = id ? "We have your order. Send it on WhatsApp too and we will confirm the price and delivery. Keep the order number to track it."
       : "We could not save your order online. Please send it on WhatsApp so that we receive it.";
+    $("doneMsg").textContent += payMethod() === "Cash on delivery" ? " You chose cash on delivery." : (upiId() ? "" : " We will send our UPI details on WhatsApp.");
     $("trackLink").hidden = !id;
     if (id) { $("trackLink").href = "track.html#" + id; try { localStorage.setItem("tnsLastOrder", id); } catch (e) {} }
     $("orderForm").hidden = true; $("orderDone").hidden = false;
     cart = {}; render();
     $("place").disabled = false; $("place").textContent = "Place order";
   };
-  api({action: "order", name: $("custName").value, phone: $("custPhone").value, address: $("custAddr").value, location: loc, items: itemsText(), total: totalText()})
+  api({action: "order", name: $("custName").value, phone: $("custPhone").value, address: $("custAddr").value, location: loc, items: itemsText(), total: totalText(), method: payMethod()})
     .then(r => done(r.ok ? r.id : "")).catch(() => done(""));
 };
 $("openCart").onclick = () => { $("orderForm").hidden = false; $("orderDone").hidden = true; $("panel").hidden = false; };
