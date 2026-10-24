@@ -14,6 +14,9 @@ let DATA = {sizes: ["250 g", "500 g", "1 kg"], items: []};
 Object.keys(BUILT_IN).forEach(c => BUILT_IN[c].forEach(([name, te, nv]) => DATA.items.push({cat: c, name, te, nv: !!nv, prices: {}})));
 
 const $ = id => document.getElementById(id);
+(function () { const h = document.querySelector(".top"); if (!h) return;
+  const set = () => document.documentElement.style.setProperty("--head", h.offsetHeight + "px");
+  set(); addEventListener("resize", set); addEventListener("load", set); })();
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const rs = n => "₹" + Number(n).toLocaleString("en-IN");
 let cart = {};
