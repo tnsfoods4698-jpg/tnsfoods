@@ -99,6 +99,20 @@ function showPay(id, sum, unpriced) {
     : "Some items are priced on WhatsApp. Please pay after we send you the final amount.";
 }
 
+// Flowing strip of reviews, used on the home and reviews pages.
+(function () {
+  const t = $("revTicker"); if (!t) return;
+  const stars = n => '<span class="rate">' + [1, 2, 3, 4, 5].map(i => '<span class="' + (i <= n ? "on" : "") + '">★</span>').join("") + "</span>";
+  api({action: "reviews"}).then(r => {
+    const list = (r.reviews || []).slice(0, 12); if (!list.length) return;
+    const card = x => '<article class="tcard">' + stars(x.rating) + '<p class="revtext">' + esc(x.review.length > 160 ? x.review.slice(0, 157) + "..." : x.review) + '</p><p class="revwho"><strong>' + esc(x.name) + '</strong>' + (x.place ? ", " + esc(x.place) : "") + (x.item ? " · " + esc(x.item) : "") + "</p></article>";
+    const html = list.map(card).join("");
+    const reps = list.length < 4 ? 3 : 2;
+    t.innerHTML = '<div class="track" style="--n:' + list.length * reps + '">' + html.repeat(reps) + html.repeat(reps) + "</div>";
+    $("revTickerWrap").hidden = false;
+  }).catch(() => {});
+})();
+
 let loc = "";
 function lines() {
   return Object.entries(cart).map(([k, q]) => { const [name, size] = k.split("|"), p = priceOf(name, size); return {k, name, size, q, p, amt: p * q}; });

@@ -180,6 +180,18 @@ label{display:grid;gap:4px;font-weight:500}
 .stars label{font-size:2.4rem;line-height:1;color:var(--line);cursor:pointer;font-weight:400}
 .stars label:hover,.stars label:hover~label,.stars input:checked~label{color:var(--turmeric)}
 .stars input:focus-visible+label{outline:3px solid var(--turmeric);border-radius:4px}
+.ticker-wrap{padding-block:40px 10px;overflow:hidden}
+.ticker-h{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.link.small{font-family:var(--body);font-size:1rem;font-weight:500}
+.ticker{overflow:hidden;width:100%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.track{display:flex;gap:18px;width:max-content;padding-inline:9px;animation:flow calc(var(--n) * 6s) linear infinite}
+.ticker:hover .track,.ticker:focus-within .track{animation-play-state:paused}
+.tcard{width:300px;flex:none;background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--turmeric);padding:14px 16px;display:grid;gap:6px;align-content:start;box-shadow:0 3px 10px rgba(40,20,5,.07)}
+.tcard p{margin:0}
+.tcard .revtext{font-size:1rem}
+@keyframes flow{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.track{animation:none;width:auto;flex-wrap:wrap}.ticker{mask-image:none;-webkit-mask-image:none}}
+@media (max-width:560px){.tcard{width:250px}}
 [hidden]{display:none!important}
 
 @media (max-width:760px){
