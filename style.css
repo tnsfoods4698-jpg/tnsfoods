@@ -164,6 +164,22 @@ label{display:grid;gap:4px;font-weight:500}
 .payopt legend{font-weight:500;padding:0 4px}
 .payopt label{display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer}
 .payopt input{width:18px;height:18px;padding:0}
+.revgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:18px;margin-bottom:40px}
+.rev{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--turmeric);padding:16px 18px;display:grid;gap:8px;align-content:start}
+.rev p{margin:0}
+.revtext{font-size:1.05rem;line-height:1.5}
+.revwho{color:var(--muted);font-size:.92rem}
+.rate span{color:var(--line);font-size:1.2rem;letter-spacing:1px}
+.rate span.on{color:var(--turmeric)}
+.revform{max-width:620px;padding-bottom:50px}
+.revform h2{margin-bottom:.3em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.two{grid-template-columns:1fr}}
+.stars{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:4px}
+.stars input{position:absolute;opacity:0;width:1px;height:1px}
+.stars label{font-size:2.4rem;line-height:1;color:var(--line);cursor:pointer;font-weight:400}
+.stars label:hover,.stars label:hover~label,.stars input:checked~label{color:var(--turmeric)}
+.stars input:focus-visible+label{outline:3px solid var(--turmeric);border-radius:4px}
 [hidden]{display:none!important}
 
 @media (max-width:760px){

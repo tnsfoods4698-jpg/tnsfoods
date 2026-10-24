@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reviews | TNS Homemade Foods</title>
+<meta name="description" content="What customers say about TNS pickles, sweets and snacks, and a form to leave your own review.">
+<meta property="og:title" content="Reviews | TNS Homemade Foods">
+<meta property="og:description" content="What customers say about TNS pickles, sweets and snacks, and a form to leave your own review.">
+<meta property="og:image" content="https://tnsfoods4698-jpg.github.io/tnsfoods/logo.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Kaushan+Script&family=Mukta:wght@400;500;700&family=Ramabhadra&family=Noto+Sans+Telugu:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="index.html"><img src="logo.jpg" alt="TNS" width="96" height="60"><span>TNS <small>Homemade Foods</small></span></a>
+    <nav aria-label="Main"><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="godavari.html">Godavari Taste</a><a href="track.html">Track Order</a><a href="reviews.html" aria-current="page">Reviews</a><a href="contact.html">Contact</a></nav>
+  </div>
+</header>
+<main class="wrap">
+<section class="pagehead">
+  <p class="te hero-te">మీ అభిప్రాయం</p>
+  <h1>Customer reviews</h1>
+  <p class="lede" id="revSummary">Loading reviews...</p>
+</section>
+<div class="revgrid" id="revList"></div>
+<section class="revform" id="revFormBox">
+  <h2>Tell us how it tasted</h2>
+  <p class="note">Your review is shown on this page after we read it, usually within a day.</p>
+  <form id="revForm" class="stack">
+    <div class="stars" id="stars" role="radiogroup" aria-label="Your rating">
+      <input type="radio" name="rating" id="r5" value="5"><label for="r5" title="5 stars">★</label>
+      <input type="radio" name="rating" id="r4" value="4"><label for="r4" title="4 stars">★</label>
+      <input type="radio" name="rating" id="r3" value="3"><label for="r3" title="3 stars">★</label>
+      <input type="radio" name="rating" id="r2" value="2"><label for="r2" title="2 stars">★</label>
+      <input type="radio" name="rating" id="r1" value="1"><label for="r1" title="1 star">★</label>
+    </div>
+    <div class="two">
+      <label for="revName">Your name<input id="revName" required maxlength="60" autocomplete="name"></label>
+      <label for="revPlace">Your town or village<input id="revPlace" maxlength="60" placeholder="Optional"></label>
+    </div>
+    <div class="two">
+      <label for="revItem">What did you order?<input id="revItem" maxlength="80" placeholder="e.g. Mango Pickle, Murukku"></label>
+      <label for="revOrder">Order number<input id="revOrder" maxlength="20" placeholder="Optional, TNS-"></label>
+    </div>
+    <label for="revText">Your review<textarea id="revText" rows="4" required minlength="5" maxlength="600"></textarea></label>
+    <p class="err" id="revErr" hidden></p>
+    <button class="btn" type="submit" id="revSend">Send review</button>
+  </form>
+  <p class="done-id" id="revThanks" hidden>Thank you! We will read your review and put it up soon.</p>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var g = function (i) { return document.getElementById(i); };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+  function starStr(n) { var s = ""; for (var i = 1; i <= 5; i++) s += '<span class="' + (i <= n ? "on" : "") + '">★</span>'; return '<span class="rate" aria-label="' + n + ' out of 5">' + s + "</span>"; }
+  api({action: "reviews"}).then(function (r) {
+    var list = r.reviews || [];
+    if (!list.length) { g("revSummary").textContent = "No reviews yet. Be the first to tell us how it tasted."; return; }
+    var avg = list.reduce(function (a, x) { return a + x.rating; }, 0) / list.length;
+    g("revSummary").innerHTML = starStr(Math.round(avg)) + " <strong>" + avg.toFixed(1) + "</strong> out of 5, from " + list.length + (list.length == 1 ? " review" : " reviews") + ".";
+    g("revList").innerHTML = list.map(function (x) {
+      var d = x.date ? new Date(x.date) : null;
+      return '<article class="rev">' + starStr(x.rating) + '<p class="revtext">' + esc(x.review) + '</p>' +
+        '<p class="revwho"><strong>' + esc(x.name) + '</strong>' + (x.place ? ', ' + esc(x.place) : '') + (x.item ? ' · ' + esc(x.item) : '') +
+        (d && !isNaN(d) ? ' · ' + d.toLocaleDateString("en-IN", {month: "short", year: "numeric"}) : '') + '</p></article>';
+    }).join("");
+  }).catch(function () { g("revSummary").textContent = "Could not load reviews right now."; });
+  g("revForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var rating = (document.querySelector('input[name="rating"]:checked') || {}).value, err = g("revErr");
+    err.hidden = true;
+    if (!rating) { err.textContent = "Please tap a star to give a rating."; err.hidden = false; return; }
+    g("revSend").disabled = true; g("revSend").textContent = "Sending...";
+    api({action: "review", rating: rating, name: g("revName").value, place: g("revPlace").value, item: g("revItem").value, order: g("revOrder").value, review: g("revText").value})
+      .then(function (r) {
+        if (!r.ok) { err.textContent = r.error; err.hidden = false; g("revSend").disabled = false; g("revSend").textContent = "Send review"; return; }
+        g("revForm").hidden = true; g("revThanks").hidden = false;
+      }).catch(function () { err.textContent = "Could not send. Check your internet and try again."; err.hidden = false; g("revSend").disabled = false; g("revSend").textContent = "Send review"; });
+  });
+});
+</script>
+</main>
+<footer class="foot">
+  <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c90-26 170 20 270 4s170-30 280-8 190 22 300 2 220-24 350 6v14H0z" fill="currentColor"/></svg>
+  <div class="foot-body"><div class="wrap foot-in">
+    <div><p class="foot-name">TNS Homemade Foods</p><p class="te">మా వంటింటి నుండి మీ మనసు వరకు</p><p class="fssai" data-fssai hidden>FSSAI Lic. No. <span></span></p></div>
+    <div><p data-set="address">1-32/1, Main Road, Rajaka Vari Street, near SBI Bank, Velivennu, Undrajavaram Mandal, Andhra Pradesh 534329</p></div>
+    <div><p><a data-tel="phone1" href="tel:+919948804698">99488 04698</a><br><a data-tel="phone2" href="tel:+919492394098">94923 94098</a><br><a data-mail href="mailto:tnsfoods4698@gmail.com">tnsfoods4698@gmail.com</a></p><p><a href="menu.html">See the menu</a><br><a data-ig href="https://www.instagram.com/tns_homefoods" target="_blank" rel="noopener">Instagram</a></p></div>
+  </div></div>
+</footer>
+<div class="tray" id="tray" hidden><div class="wrap tray-in"><span id="trayText"></span><button id="openCart" type="button">View order</button></div></div>
+<div class="panel" id="panel" hidden>
+  <div class="sheet" role="dialog" aria-label="Your order">
+    <h2>Your order <button class="x" id="closeCart" type="button" aria-label="Close">×</button></h2>
+    <div id="orderForm" class="stack">
+      <ul class="cart" id="cart"></ul>
+      <label for="custName">Your name<input id="custName" autocomplete="name"></label>
+      <label for="custPhone">Phone number<input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 digit mobile number"></label>
+      <label for="custAddr">Delivery address, or write "pickup"<textarea id="custAddr" rows="2"></textarea></label>
+      <div class="locrow"><button class="btn ghost" id="locBtn" type="button">Share my location</button><span id="locMsg" class="note">Helps us find your door. Optional.</span></div>
+      <fieldset class="payopt"><legend>How will you pay?</legend>
+        <label for="payUpi"><input type="radio" name="payMethod" id="payUpi" value="UPI" checked> UPI</label>
+        <label for="payCod"><input type="radio" name="payMethod" id="payCod" value="Cash on delivery"> Cash on delivery</label>
+      </fieldset>
+      <p class="note">We reply on WhatsApp with the price and delivery details before we pack anything.</p>
+      <p class="err" id="orderErr" hidden></p>
+      <button class="btn wa" id="place" type="button">Place order</button>
+    </div>
+    <div id="orderDone" class="stack" hidden>
+      <p class="done-id" id="doneLine"></p>
+      <p id="doneMsg"></p>
+      <a class="btn wa" id="send" target="_blank" rel="noopener">Send it on WhatsApp</a>
+      <a class="link" id="trackLink" href="track.html">Track this order</a>
+      <div class="paybox" id="payBox" hidden>
+        <p class="paytitle">Pay by UPI <strong id="payAmt"></strong></p>
+        <div class="qr" id="payQr"></div>
+        <p>UPI ID: <strong id="payId" class="sel"></strong></p>
+        <a class="btn" id="payLink">Open my UPI app</a>
+        <p class="note" id="payNote"></p>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
